@@ -4,31 +4,32 @@
 
 float distance = 0;
 
-HCSR04 ultrasonicSensor(D6, D5, 22, 40);      // Trigpin, Echopin, Temperature, Max distance
- 
+HCSR04 ultrasonicSensor(41, 40, 22, 40);      // Trigpin, Echopin, Temperature, Max distance
+
 LiquidCrystal_I2C lcd(0x27, 16, 2);           // I2C Address, Cols, Rows
 
-const int GreenLed  = D0;   // Assign pin D0 to the Green Led
-const int YellowLed = D4;   // Assign pin D4 to the Yellow Led
-const int RedLed    = D3;   // Assign pin D3 to the Red Led
+const int GreenLed  = 1;   // Assign pin D0 to the Green Led
+const int YellowLed = 2;   // Assign pin D4 to the Yellow Led
+const int RedLed    = 42;   // Assign pin D3 to the Red Led
 
 void RedLight();
+void printpercent();
 
 int percent = map(distance, 0, 40, 0, 100);   // Change from distance to percent 0-100
 
 void setup() {
-  Serial.begin(9600);
+Serial.begin(9600);
 
-  ultrasonicSensor.begin();                  // Initialize Trigpin and Echopin 
-  ultrasonicSensor.setTemperature(22.5);     // Set temp for ultrasonic sensor
+ultrasonicSensor.begin();                  // Initialize Trigpin and Echopin 
+ultrasonicSensor.setTemperature(22.5);     // Set temp for ultrasonic sensor
 
-  lcd.init();       // Initialize lcd screen
-  lcd.backlight();  // Turn on backlight on lcd
-  lcd.clear();      // Clear the lcd
+lcd.init();       // Initialize lcd screen
+lcd.backlight();  // Turn on backlight on lcd
+lcd.clear();      // Clear the lcd
 
-  pinMode(GreenLed,  OUTPUT);   // Set Green Led as Output
-  pinMode(YellowLed, OUTPUT);   // Set Yellow Led as Output
-  pinMode(RedLed,    OUTPUT);   // Set Red Led as Output
+pinMode(GreenLed,  OUTPUT);   // Set Green Led as Output
+pinMode(YellowLed, OUTPUT);   // Set Yellow Led as Output
+pinMode(RedLed,    OUTPUT);   // Set Red Led as Output
 }
 
 void loop()
