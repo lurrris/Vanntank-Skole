@@ -4,7 +4,7 @@
 
 float distance = 0;
 
-HCSR04 ultrasonicSensor(41, 40, 22, 40); // Trigpin, Echopin, Temperature, Max distance
+HCSR04 ultrasonicSensor(36, 35, 22, 40); // Trigpin, Echopin, Temperature, Max distance
 
 LiquidCrystal_I2C lcd(0x27, 16, 2); // I2C Address, Cols, Rows
 
