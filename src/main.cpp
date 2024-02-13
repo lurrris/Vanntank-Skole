@@ -4,37 +4,40 @@
 
 float distance = 0;
 
-HCSR04 ultrasonicSensor(41, 40, 22, 40);      // Trigpin, Echopin, Temperature, Max distance
+HCSR04 ultrasonicSensor(41, 40, 22, 40); // Trigpin, Echopin, Temperature, Max distance
 
-LiquidCrystal_I2C lcd(0x27, 16, 2);           // I2C Address, Cols, Rows
+LiquidCrystal_I2C lcd(0x27, 16, 2); // I2C Address, Cols, Rows
 
-const int GreenLed  = 1;   // Assign pin D0 to the Green Led
-const int YellowLed = 2;   // Assign pin D4 to the Yellow Led
-const int RedLed    = 42;   // Assign pin D3 to the Red Led
+const int GreenLed = 42;  // Assign pin D0 to the Green Led
+const int YellowLed = 2; // Assign pin D4 to the Yellow Led
+const int RedLed = 1;   // Assign pin D3 to the Red Led
 
 void RedLight();
 void printpercent();
 
-int percent = map(distance, 0, 40, 0, 100);   // Change from distance to percent 0-100
+int percent = map(distance, 0, 40, 0, 100); // Change from distance to percent 0-100
 
-void setup() {
-Serial.begin(9600);
+void setup()
+{
+  Serial.begin(9600);
 
-ultrasonicSensor.begin();                  // Initialize Trigpin and Echopin 
-ultrasonicSensor.setTemperature(22.5);     // Set temp for ultrasonic sensor
+  ultrasonicSensor.begin();              // Initialize Trigpin and Echopin
+  ultrasonicSensor.setTemperature(22.5); // Set temp for ultrasonic sensor
 
-lcd.init();       // Initialize lcd screen
-lcd.backlight();  // Turn on backlight on lcd
-lcd.clear();      // Clear the lcd
+  lcd.init();      // Initialize lcd screen
+  lcd.backlight(); // Turn on backlight on lcd
+  lcd.clear();     // Clear the lcd
 
-pinMode(GreenLed,  OUTPUT);   // Set Green Led as Output
-pinMode(YellowLed, OUTPUT);   // Set Yellow Led as Output
-pinMode(RedLed,    OUTPUT);   // Set Red Led as Output
+  pinMode(GreenLed, OUTPUT);  // Set Green Led as Output
+  pinMode(YellowLed, OUTPUT); // Set Yellow Led as Output
+  pinMode(RedLed, OUTPUT);    // Set Red Led as Output
 }
 
 void loop()
 {
   int distance = ultrasonicSensor.getDistance();
+  Serial.print(distance);
+  Serial.println("cm");
 
   if (distance >= 32)
   {
@@ -47,12 +50,19 @@ void loop()
 
     printpercent();
   }
-  else if (distance >20 <32)
+  else if ((distance > 20) && (distance < 32))
   {
     digitalWrite(GreenLed, LOW);
     digitalWrite(RedLed, LOW);
 
     digitalWrite(YellowLed, HIGH);
+  }
+  else if (distance > 32)
+  {
+    digitalWrite(YellowLed, LOW);
+    digitalWrite(RedLed, LOW);
+
+    digitalWrite(GreenLed, HIGH);
   }
 }
 
@@ -70,14 +80,19 @@ void RedLight()
 
 void printpercent()
 {
-  if (percent >= 10)
+  if (percent = 100)
+  {
+    lcd.setCursor(5, 1);
+    lcd.print(percent);
+    lcd.print("%");
+  }
+  else if ((percent > 10) && (percent < 100))
   {
     lcd.setCursor(6, 1);
     lcd.print(percent);
     lcd.print("%");
   }
-  else if(percent < 10)
-    ;
+  else if (percent < 10)
   {
     lcd.setCursor(7, 1);
     lcd.print(percent);
