@@ -2,20 +2,19 @@
 #include <LiquidCrystal_I2C.h>
 #include <HCSR04.h>
 
-float distance = 0;
-
-HCSR04 ultrasonicSensor(36, 35, 22, 40); // Trigpin, Echopin, Temperature, Max distance
+HCSR04 ultrasonicSensor(38, 37, 22, 40); // Trigpin, Echopin, Temperature, Max distance
 
 LiquidCrystal_I2C lcd(0x27, 16, 2); // I2C Address, Cols, Rows
 
-const int GreenLed = 42;  // Assign pin D0 to the Green Led
-const int YellowLed = 2; // Assign pin D4 to the Yellow Led
-const int RedLed = 1;   // Assign pin D3 to the Red Led
+const int GreenLed = 41;  // Assign pin D0 to the Green Led
+const int YellowLed = 40; // Assign pin D4 to the Yellow Led
+const int RedLed = 39;   // Assign pin D3 to the Red Led
 
+void GreenLight();
+void YellowLight();
 void RedLight();
-void printpercent();
-
-int percent = map(distance, 0, 40, 0, 100); // Change from distance to percent 0-100
+void printpercent(int percent);
+int ReadWaterLevel();
 
 void setup()
 {
@@ -35,39 +34,49 @@ void setup()
 
 void loop()
 {
-  int distance = ultrasonicSensor.getDistance();
-  Serial.print(distance);
-  Serial.println("cm");
+  int WaterLevel = ReadWaterLevel();   // Read WaterLevel in percent
 
-  if (distance >= 32)
+   printpercent(WaterLevel);
+
+  if (WaterLevel <= 20)
   {
-    digitalWrite(GreenLed, LOW);
-    digitalWrite(YellowLed, LOW);
-
     RedLight();
     lcd.setCursor(2, 0);
     lcd.print("Empty! Fill!");
-
-    printpercent();
   }
-  else if ((distance > 20) && (distance < 32))
+  else if ((WaterLevel > 20) && (WaterLevel < 60))
   {
-    digitalWrite(GreenLed, LOW);
-    digitalWrite(RedLed, LOW);
-
-    digitalWrite(YellowLed, HIGH);
+    YellowLight();
   }
-  else if (distance > 32)
+  else if (WaterLevel >= 60)
   {
-    digitalWrite(YellowLed, LOW);
-    digitalWrite(RedLed, LOW);
-
-    digitalWrite(GreenLed, HIGH);
+    GreenLight();
   }
+}
+
+void GreenLight()
+{
+  digitalWrite(YellowLed, LOW);
+  digitalWrite(RedLed, LOW);
+
+  digitalWrite(GreenLed, HIGH);
+  delay(400);
+}
+
+void YellowLight()
+{
+  digitalWrite(GreenLed, LOW);
+  digitalWrite(RedLed, LOW);
+
+  digitalWrite(YellowLed, HIGH);
+  delay(400);
 }
 
 void RedLight()
 {
+  digitalWrite(GreenLed, LOW);
+  digitalWrite(YellowLed, LOW);
+
   digitalWrite(RedLed, HIGH);
   delay(200);
   digitalWrite(RedLed, LOW);
@@ -78,8 +87,10 @@ void RedLight()
   delay(200);
 }
 
-void printpercent()
+void printpercent(int percent)
 {
+  lcd.clear();
+
   if (percent = 100)
   {
     lcd.setCursor(5, 1);
@@ -99,3 +110,22 @@ void printpercent()
     lcd.print("%");
   }
 }
+
+int ReadWaterLevel()
+{
+  float distance = 0;
+  int percent = 0;
+
+  distance = ultrasonicSensor.getDistance();
+  percent = map(distance, 0, 40, 100, 0); // Change from distance to percent 0-100
+
+  Serial.print(distance);
+  Serial.print("cm");
+
+  Serial.print(" ");
+
+  Serial.print(percent);
+  Serial.println("%");
+
+  return(percent);
+} 
