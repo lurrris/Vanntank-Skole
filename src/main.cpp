@@ -10,47 +10,49 @@ const int GreenLed = 41;  // Assign pin D0 to the Green Led
 const int YellowLed = 40; // Assign pin D4 to the Yellow Led
 const int RedLed = 39;   // Assign pin D3 to the Red Led
 
+void loop();
 void GreenLight();
 void YellowLight();
 void RedLight();
 void printpercent(int percent);
-int ReadWaterLevel();
+int  ReadWaterLevel();
 
 void setup()
 {
   Serial.begin(9600);
 
-  ultrasonicSensor.begin();              // Initialize Trigpin and Echopin
-  ultrasonicSensor.setTemperature(22.5); // Set temp for ultrasonic sensor
+  ultrasonicSensor.begin();                // Initialize Trigpin and Echopin
+  ultrasonicSensor.setTemperature(22.5);   // Set temp for ultrasonic sensor
 
-  lcd.init();      // Initialize lcd screen
-  lcd.backlight(); // Turn on backlight on lcd
-  lcd.clear();     // Clear the lcd
+  lcd.init();        // Initialize lcd screen
+  lcd.backlight();   // Turn on backlight on lcd
+  lcd.clear();       // Clear the lcd
 
-  pinMode(GreenLed, OUTPUT);  // Set Green Led as Output
-  pinMode(YellowLed, OUTPUT); // Set Yellow Led as Output
-  pinMode(RedLed, OUTPUT);    // Set Red Led as Output
+  pinMode(GreenLed, OUTPUT);    // Set Green Led as Output
+  pinMode(YellowLed, OUTPUT);   // Set Yellow Led as Output
+  pinMode(RedLed, OUTPUT);      // Set Red Led as Output
 }
 
 void loop()
 {
   int WaterLevel = ReadWaterLevel();   // Read WaterLevel in percent
 
-   printpercent(WaterLevel);
-
   if (WaterLevel <= 20)
   {
     RedLight();
     lcd.setCursor(2, 0);
     lcd.print("Empty! Fill!");
+    printpercent(WaterLevel);
   }
   else if ((WaterLevel > 20) && (WaterLevel < 60))
   {
     YellowLight();
+    printpercent(WaterLevel);
   }
   else if (WaterLevel >= 60)
   {
     GreenLight();
+    printpercent(WaterLevel);
   }
 }
 
@@ -91,7 +93,7 @@ void printpercent(int percent)
 {
   lcd.clear();
 
-  if (percent = 100)
+  if (percent == 100)
   {
     lcd.setCursor(5, 1);
     lcd.print(percent);
@@ -109,6 +111,7 @@ void printpercent(int percent)
     lcd.print(percent);
     lcd.print("%");
   }
+  Serial.print(percent);
 }
 
 int ReadWaterLevel()
@@ -117,6 +120,9 @@ int ReadWaterLevel()
   int percent = 0;
 
   distance = ultrasonicSensor.getDistance();
+  if (distance > 40) {
+  distance = 40;
+  }
   percent = map(distance, 0, 40, 100, 0); // Change from distance to percent 0-100
 
   Serial.print(distance);
