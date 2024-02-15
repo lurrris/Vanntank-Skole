@@ -10,10 +10,8 @@ const int GreenLed  = 41;   // Assign pin D0 to the Green Led
 const int YellowLed = 40;   // Assign pin D4 to the Yellow Led
 const int RedLed    = 39;   // Assign pin D3 to the Red Led
 
-const byte Full          = 0;    
-const byte Empty         = 30; 
-const byte FullPercent   = 100;    // Set Max water Water level in percent
-const byte EmptyPercent  = 0;   // Set Minimum water level in percent
+const byte Full  = 0;    
+const byte Empty = 30;
 
 void loop();
 void GreenLight();
@@ -40,7 +38,9 @@ void setup()
 
 void loop()
 {
-  int WaterLevel = ReadWaterLevel();   // Read WaterLevel in percent
+  int WaterLevel = 0;
+
+  WaterLevel = ReadWaterLevel();  // Read WaterLevel in percent
 
   if (WaterLevel <= 20)
   {
@@ -127,8 +127,12 @@ int ReadWaterLevel()
   distance = ultrasonicSensor.getDistance();
   if (distance > Empty) {
   distance = Empty;
+  } else if(distance < Full){
+    distance = Full;
   }
-  percent = map(distance, Full, Empty, EmptyPercent, FullPercent); // Change from distance to percent 0-100
+  // percent = map(distance, Full, Empty, 100, 0); // Change from distance to percent 0-100
+
+  percent = distance; // Change from distance to percent 0-100
 
   Serial.print(distance);
   Serial.print("cm");
