@@ -2,7 +2,7 @@
 #include <LiquidCrystal_I2C.h>
 #include <Ultrasonic.h>
 
-Ultrasonic ultrasonic1(38, 37); // TrigpiN and Echopin
+Ultrasonic ultrasonic1(38, 37); // Trigpin and Echopin
 
 LiquidCrystal_I2C lcd(0x27, 16, 2); // I2C Address, Cols, Rows
 
@@ -58,6 +58,7 @@ void loop()
   }
 }
 
+// Turns on green led and turns off all other leds
 void GreenLight()
 {
   digitalWrite(YellowLed, LOW);
@@ -67,6 +68,7 @@ void GreenLight()
   delay(400);
 }
 
+// Turns on yellow led and turn off all other leds
 void YellowLight()
 {
   digitalWrite(GreenLed, LOW);
@@ -76,6 +78,7 @@ void YellowLight()
   delay(400);
 }
 
+// Start red led sequence and start buzzer also turns off all other leds
 void RedLightandBuzz()
 {
   digitalWrite(GreenLed, LOW);
@@ -87,6 +90,7 @@ void RedLightandBuzz()
   delay(300);
 }
 
+// Prints the water precentage
 void printpercent(int percent)
 {
   lcd.clear();
@@ -112,6 +116,7 @@ void printpercent(int percent)
   }
 }
 
+// Reads water level and maps distance to perecent
 int ReadWaterLevel()
 {
   unsigned int distance = 0;
