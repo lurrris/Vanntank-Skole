@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include <LiquidCrystal_I2C.h>
-#include <HCSR04.h>
+#include <Ultrasonic.h>
 
-HCSR04 ultrasonicSensor(38, 37, 22, 30); // Trigpin, Echopin, Temperature, Max distance
+Ultrasonic ultrasonic1(38, 37); // TrigpiN and Echopin
 
 LiquidCrystal_I2C lcd(0x27, 16, 2); // I2C Address, Cols, Rows
 
@@ -10,7 +10,7 @@ const int GreenLed  = 41;   // Assign pin D0 to the Green Led
 const int YellowLed = 40;   // Assign pin D4 to the Yellow Led
 const int RedLed    = 39;   // Assign pin D3 to the Red Led
 
-const byte Full  = 0;    
+const byte Full  = 8;    
 const byte Empty = 30;
 
 void loop();
@@ -22,10 +22,7 @@ int  ReadWaterLevel();
 
 void setup()
 {
-  Serial.begin(9600);
-
-  ultrasonicSensor.begin();                // Initialize Trigpin and Echopin
-  ultrasonicSensor.setTemperature(22.5);   // Set temp for ultrasonic sensor
+  Serial.begin(115200);
 
   lcd.init();        // Initialize lcd screen
   lcd.backlight();   // Turn on backlight on lcd
@@ -88,10 +85,6 @@ void RedLightandBuzz()
   delay(300);
   digitalWrite(RedLed, LOW);
   delay(300);
-  digitalWrite(RedLed, HIGH);
-  delay(300);
-  digitalWrite(RedLed, LOW);
-  delay(300);
 }
 
 void printpercent(int percent)
@@ -104,7 +97,7 @@ void printpercent(int percent)
     lcd.print(percent);
     lcd.print("%");
   }
-  else if ((percent > 10) && (percent < 100))
+  else if ((percent >= 10) && (percent < 100))
   {
     lcd.setCursor(6, 1);
     lcd.print(percent);
@@ -115,24 +108,23 @@ void printpercent(int percent)
     lcd.setCursor(7, 1);
     lcd.print(percent);
     lcd.print("%");
+    
   }
-  Serial.print(percent);
 }
 
 int ReadWaterLevel()
 {
-  float distance = 0;
+  unsigned int distance = 0;
   int percent = 0;
 
-  distance = ultrasonicSensor.getDistance();
+  distance = ultrasonic1.read(CM);
   if (distance > Empty) {
   distance = Empty;
   } else if(distance < Full){
     distance = Full;
   }
-  // percent = map(distance, Full, Empty, 100, 0); // Change from distance to percent 0-100
-
-  percent = distance; // Change from distance to percent 0-100
+  percent = map(distance, Full, Empty, 100, 0); // Change from distance to percent 0-100
+  
 
   Serial.print(distance);
   Serial.print("cm");
