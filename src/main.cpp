@@ -1,23 +1,32 @@
+// Navn: Kasper Fjelldalen Lurås
+// Klide 1: https://projecthub.arduino.cc/Manusha_Ramanayake/wireless-water-tank-level-meter-with-alarm-ce92f6
+
 #include <Arduino.h>
 #include <LiquidCrystal_I2C.h>
 #include <Ultrasonic.h>
 
-Ultrasonic ultrasonic1(38, 37); // Trigpin and Echopin
+Ultrasonic ultrasonic1(38, 37);     // Trigpin and Echopin
 
 LiquidCrystal_I2C lcd(0x27, 16, 2); // I2C Address, Cols, Rows
 
-const int GreenLed  = 41;   // Assign pin D0 to the Green Led
-const int YellowLed = 40;   // Assign pin D4 to the Yellow Led
-const int RedLed    = 39;   // Assign pin D3 to the Red Led
+const int GreenLed  = 41;   // Assign pin 41 to the Green Led
+const int YellowLed = 40;   // Assign pin 40 to the Yellow Led
+const int RedLed    = 39;   // Assign pin 39 to the Red Led
+const int ButtonPin = 36;   // Assign Pin 36 to the Button
+const int BuzzerPin = 35;   // Assign Pin 35 to the Buzzer
 
 const byte Full  = 8;    
 const byte Empty = 30;
+
+const unsigned long BacklightTimeout = 10000;
+unsigned long       BacklightOnTime  = 0;
 
 void loop();
 void GreenLight();
 void YellowLight();
 void RedLightandBuzz();
 void printpercent(int percent);
+void Backlight();
 int  ReadWaterLevel();
 
 void setup()
@@ -25,12 +34,13 @@ void setup()
   Serial.begin(115200);
 
   lcd.init();        // Initialize lcd screen
-  lcd.backlight();   // Turn on backlight on lcd
   lcd.clear();       // Clear the lcd
 
-  pinMode(GreenLed, OUTPUT);    // Set Green Led as Output
+  pinMode(GreenLed,  OUTPUT);   // Set Green Led as Output
   pinMode(YellowLed, OUTPUT);   // Set Yellow Led as Output
-  pinMode(RedLed, OUTPUT);      // Set Red Led as Output
+  pinMode(RedLed,    OUTPUT);   // Set Red Led as Output
+  pinMode(BuzzerPin, OUTPUT);   // Set Buzzer as Output
+  pinMode(ButtonPin, INPUT_PULLUP);   // Set Button as Output (Pullup)
 }
 
 void loop()
@@ -56,6 +66,36 @@ void loop()
     GreenLight();
     printpercent(WaterLevel);
   }
+   
+  Backlight();
+}
+
+// Reads water level and maps distance to perecent
+int ReadWaterLevel()
+{
+  unsigned int distance = 0;
+  int percent = 0;
+
+  distance = ultrasonic1.read(CM);
+  if (distance > Empty)
+  {
+    distance = Empty;
+  }
+  else if(distance < Full)
+  {
+    distance = Full;
+  }
+  percent = map(distance, Full, Empty, 100, 0); // Change from distance to percent 0-100
+  
+  Serial.print(distance);
+  Serial.print("cm");
+
+  Serial.print(" ");
+
+  Serial.print(percent);
+  Serial.println("%");
+
+  return(percent);
 }
 
 // Turns on green led and turns off all other leds
@@ -65,7 +105,7 @@ void GreenLight()
   digitalWrite(RedLed, LOW);
 
   digitalWrite(GreenLed, HIGH);
-  delay(400);
+  delay(25);
 }
 
 // Turns on yellow led and turn off all other leds
@@ -75,19 +115,21 @@ void YellowLight()
   digitalWrite(RedLed, LOW);
 
   digitalWrite(YellowLed, HIGH);
-  delay(400);
+  delay(25);
 }
 
-// Start red led sequence and start buzzer also turns off all other leds
+// Start red led sequence and buzzer also turns off all other leds
 void RedLightandBuzz()
 {
   digitalWrite(GreenLed, LOW);
   digitalWrite(YellowLed, LOW);
 
   digitalWrite(RedLed, HIGH);
-  delay(300);
+  tone(BuzzerPin, 250);
+  delay(200);
   digitalWrite(RedLed, LOW);
-  delay(300);
+  noTone(BuzzerPin);
+  delay(200);
 }
 
 // Prints the water precentage
@@ -116,28 +158,19 @@ void printpercent(int percent)
   }
 }
 
-// Reads water level and maps distance to perecent
-int ReadWaterLevel()
+// Turn on LCD backlight if button pressed, also turn off backlight after timeout
+void Backlight()
 {
-  unsigned int distance = 0;
-  int percent = 0;
-
-  distance = ultrasonic1.read(CM);
-  if (distance > Empty) {
-  distance = Empty;
-  } else if(distance < Full){
-    distance = Full;
+  if (digitalRead(ButtonPin) == LOW)
+  {
+    lcd.display();
+    lcd.backlight();
+    BacklightOnTime = millis();
   }
-  percent = map(distance, Full, Empty, 100, 0); // Change from distance to percent 0-100
-  
 
-  Serial.print(distance);
-  Serial.print("cm");
-
-  Serial.print(" ");
-
-  Serial.print(percent);
-  Serial.println("%");
-
-  return(percent);
-} 
+  if ((millis() - BacklightOnTime) >= BacklightTimeout)
+  {
+    lcd.noBacklight();
+    lcd.noDisplay();
+  }  
+}
